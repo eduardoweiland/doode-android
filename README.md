@@ -1,4 +1,4 @@
-doode-android
+Doode Android
 =============
 
-Aplicativo da rede social Doode para Android
+Aplicativo oficial da rede social Doode para Android
