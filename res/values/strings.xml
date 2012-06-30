@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Doode</string>
+    <string name="username">Nome de usuário</string>
+    <string name="password">Senha</string>
+    <string name="login">Entrar</string>
+    <string name="app_description">O pinguim virou robô!</string>
+    <string name="remember_login">Lembrar nesse dispositivo</string>
+
+</resources>
