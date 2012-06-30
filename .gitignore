@@ -1,0 +1,7 @@
+# generated binaries
+bin/*
+gen/*
+# IDE specific
+.settings/*
+.project
+.classpath
