@@ -2,24 +2,35 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="net.doode.android"
     android:versionCode="1"
-    android:versionName="0.1 alpha">
+    android:versionName="0.1 alpha"
+    android:installLocation="auto">
 
     <!-- SDK version -->
-    <uses-sdk android:minSdkVersion="8" android:targetSdkVersion="14"/>
+    <uses-sdk android:minSdkVersion="7"
+              android:targetSdkVersion="14"/>
 
     <!-- app permissions -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+
+    <!--  screen support -->
+    <supports-screens android:largeScreens="true"
+                      android:anyDensity="true"
+                      android:normalScreens="true"
+                      android:smallScreens="true"/>
 
     <!-- define our application -->
     <application android:icon="@drawable/ic_launcher"
                  android:label="@string/app_name"
                  android:allowBackup="true"
                  android:allowClearUserData="true"
-                 android:description="@string/app_description">
+                 android:description="@string/app_description"
+                 android:name="Doode">
 
+        <!-- launcher activity -->
         <activity android:label="@string/app_name"
-                  android:name="Doode"
+                  android:name="MainView"
+                  android:theme="@android:style/Theme.NoTitleBar"
                   android:description="@string/app_description">
 
             <intent-filter>
@@ -28,6 +39,21 @@
             </intent-filter>
 
         </activity>
+
+        <!-- update profile status activity -->
+        <activity android:name="UpdateStatusActivity">
+
+            <intent-filter>
+                <action android:name="android.intent.action.SEND"/>
+                <action android:name="android.intent.action.SEND_MULTIPLE"/>
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain"/>
+            </intent-filter>
+
+        </activity>
+        
+        <!-- view mentions activity -->
+        <activity android:name="MentionsActivity"></activity>
 
     </application>
 

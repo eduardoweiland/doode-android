@@ -19,33 +19,24 @@
 
 package net.doode.android;
 
-import android.app.Application;
-
-import net.doode.android.BPXMLRPCClient;
-import net.doode.android.DoodeDB;
+import android.app.Activity;
+import android.os.Bundle;
+import android.widget.TextView;
 
 /**
- * Main application's class.
+ * Activity class for posting a new status update.
  *
  * @author Eduardo Weiland
  */
-public class Doode extends Application {
+public class UpdateStatusActivity extends Activity {
 
-    public static BPXMLRPCClient client;
-    public static DoodeDB        doodeDB;
-    public static boolean        logged;
+	@Override
+    protected void onCreate( Bundle savedInstanceState ) {
+        super.onCreate( savedInstanceState );
 
-    // DEBUG: need to connect to an external device to test
-    final private String apiUrl = "http://192.168.0.47/blog/wp-content/plugins/buddypress-xmlrpc-receiver/bp-xmlrpc.php";
-
-    /**
-     * Constructor. Initialize the XML-RPC client and load settings.
-     */
-    public Doode() {
-        // Creates the XMLRPCClient and connects to doode.net
-        client  = new BPXMLRPCClient( apiUrl );
-        // TODO: need to call this inside an activity?
-        //doodeDB = new DoodeDB( this );
+        TextView textview = new TextView( this );
+        textview.setText( "This is another test" );
+        setContentView( textview );
     }
 
 }

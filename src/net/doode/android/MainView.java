@@ -19,33 +19,40 @@
 
 package net.doode.android;
 
-import android.app.Application;
+import android.app.TabActivity;
+import android.content.Intent;
+import android.content.res.Resources;
+import android.os.Bundle;
+import android.widget.TabHost;
 
-import net.doode.android.BPXMLRPCClient;
-import net.doode.android.DoodeDB;
+public class MainView extends TabActivity {
+	
+	@Override
+	public void onCreate( Bundle savedInstanceState ) {
+	    super.onCreate( savedInstanceState );
 
-/**
- * Main application's class.
- *
- * @author Eduardo Weiland
- */
-public class Doode extends Application {
+	    // load tabs layout
+	    setContentView( R.layout.main );
 
-    public static BPXMLRPCClient client;
-    public static DoodeDB        doodeDB;
-    public static boolean        logged;
+	    Resources res   = getResources();
+	    TabHost tabHost = getTabHost();  // The activity TabHost
+	    TabHost.TabSpec spec;            // Resusable TabSpec for each tab
+	    Intent intent;                   // Reusable Intent for each tab
 
-    // DEBUG: need to connect to an external device to test
-    final private String apiUrl = "http://192.168.0.47/blog/wp-content/plugins/buddypress-xmlrpc-receiver/bp-xmlrpc.php";
+	    // Add UpdateStatusActivity tab
+	    intent = new Intent().setClass( this, UpdateStatusActivity.class );
+	    spec   = tabHost.newTabSpec  ( "update_status" )
+	    		        .setIndicator( res.getString(R.string.update_status_title) )
+	                    .setContent  ( intent );
+	    tabHost.addTab(spec);
 
-    /**
-     * Constructor. Initialize the XML-RPC client and load settings.
-     */
-    public Doode() {
-        // Creates the XMLRPCClient and connects to doode.net
-        client  = new BPXMLRPCClient( apiUrl );
-        // TODO: need to call this inside an activity?
-        //doodeDB = new DoodeDB( this );
-    }
+	    // Add MentionsActivity tab
+	    intent = new Intent().setClass( this, MentionsActivity.class );
+	    spec   = tabHost.newTabSpec  ( "mentions" )
+	    		        .setIndicator( res.getString(R.string.mentions_title) )
+	                    .setContent  ( intent );
+	    tabHost.addTab(spec);
 
+	    tabHost.setCurrentTab(0);
+	}
 }

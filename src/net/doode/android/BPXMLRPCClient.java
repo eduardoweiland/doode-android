@@ -110,16 +110,16 @@ public class BPXMLRPCClient {
         _username = username;
         _password = password;
 
-        final class LoginTask extends AsyncTask<Void, Void, Boolean> {
+        final class LoginTask extends AsyncTask<String, Void, Boolean> {
             @Override
             protected void onPostExecute(Boolean result) {
                 Doode.logged = result;
             }
-            
+
             @Override
-            protected Boolean doInBackground(Void... params) {
+            protected Boolean doInBackground(String... params) {
                 try {
-                    client.call( "bp.verifyConnection", "teste", "f52dcbfad467e34c8b5d56987f0ebd1d" );
+                    client.call( "bp.verifyConnection", params[0], params[1] );
                     return true;
                 } catch (XMLRPCException e) {
                     e.printStackTrace();
@@ -128,7 +128,7 @@ public class BPXMLRPCClient {
             }
         }
         
-        new LoginTask().execute();
+        new LoginTask().execute( username, password );
     }
 
     public void updateProfileStatus( String status ) throws XMLRPCException {
