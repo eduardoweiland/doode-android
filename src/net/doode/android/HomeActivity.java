@@ -21,44 +21,22 @@ package net.doode.android;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.Menu;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.Button;
-import android.widget.EditText;
+import android.widget.TextView;
 
 /**
- * Activity class for posting a new status update.
+ * Activity class for viewing and replying to private messages.
  *
  * @author Eduardo Weiland
  */
-public class UpdateStatusActivity extends Activity {
+public class HomeActivity extends Activity {
 
-    @Override
+	@Override
     protected void onCreate( Bundle savedInstanceState ) {
         super.onCreate( savedInstanceState );
-        setContentView( R.layout.update_status );
 
-        ((Button) findViewById( R.id.btnSend )).setOnClickListener( btnSendClick );
+        TextView textview = new TextView( this );
+        textview.setText( "Home" );
+        setContentView( textview );
     }
-    
-    public boolean onCreateOptionsMenu( Menu menu ) {
-        menu.add("test"); // yep, this is a test
-
-        return super.onCreateOptionsMenu( menu );
-    };
-
-    OnClickListener btnSendClick = new OnClickListener() {
-        public void onClick(View view) {
-            String status = ((EditText) findViewById( R.id.txtStatusMessage )).getText().toString();
-            try {
-                Doode.client.updateProfileStatus( status );
-            }
-            catch ( Exception e ) {
-                Log.d( "DoodeAndroid", e.getMessage() );
-            }
-        }
-    };
 
 }

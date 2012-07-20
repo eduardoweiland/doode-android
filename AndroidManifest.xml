@@ -40,6 +40,12 @@
 
         </activity>
 
+        <!-- login -->
+        <activity android:name="Login"></activity>
+        
+        <!-- home -->
+        <activity android:name="HomeActivity"></activity>
+
         <!-- update profile status activity -->
         <activity android:name="UpdateStatusActivity">
 
@@ -51,9 +57,15 @@
             </intent-filter>
 
         </activity>
-        
-        <!-- view mentions activity -->
+
+        <!-- mentions activity -->
         <activity android:name="MentionsActivity"></activity>
+
+        <!-- messages activity -->
+        <activity android:name="MessagesActivity"></activity>
+
+        <!-- notifications activity -->
+        <activity android:name="NotificationsActivity"></activity>
 
     </application>
 

@@ -135,7 +135,26 @@ public class BPXMLRPCClient {
         Map<String, Object> data = new HashMap<String, Object>();
         data.put( "status", status );
 
-        client.call( "bp.updateProfileStatus", _username, _password, data );
+        final class UpdateProfileStatusTask extends AsyncTask<Map<?, ?>, Void, Object> {
+            @Override
+            protected void onPostExecute( Object result ) {
+            	Boolean success = (Boolean) ((HashMap<?,?>) result).get( "confirmation" );
+                Doode.onRequestDone( success, result );
+            }
+
+            @Override
+            protected Object doInBackground(Map<?, ?>... params) {
+            	Object result = null;
+                try {
+                	result = client.call( "bp.updateProfileStatus", "teste", "f52dcbfad467e34c8b5d56987f0ebd1d", params[0] );
+                } catch (XMLRPCException e) {
+                    e.printStackTrace();
+                }
+                return result;
+            }
+        }
+
+        new UpdateProfileStatusTask().execute( data );
     }
 
     public void getActivity( String scope, int max ) throws XMLRPCException {

@@ -20,6 +20,7 @@
 package net.doode.android;
 
 import android.app.Application;
+import android.content.Context;
 
 import net.doode.android.BPXMLRPCClient;
 import net.doode.android.DoodeDB;
@@ -31,6 +32,8 @@ import net.doode.android.DoodeDB;
  */
 public class Doode extends Application {
 
+	private static Doode instance; 
+
     public static BPXMLRPCClient client;
     public static DoodeDB        doodeDB;
     public static boolean        logged;
@@ -41,11 +44,36 @@ public class Doode extends Application {
     /**
      * Constructor. Initialize the XML-RPC client and load settings.
      */
+    @Override
+    public void onCreate() {
+    	instance = this;
+    	
+        // Creates the XMLRPCClient and connects to doode.net
+        client  = new BPXMLRPCClient( apiUrl );
+        // TODO: need to call this inside an activity?
+        doodeDB = new DoodeDB( this );
+
+    	super.onCreate();
+    }
+    
+    /**
+     * Constructor. Initialize the XML-RPC client and load settings.
+     *
     public Doode() {
+    	instance = this;
+    	
         // Creates the XMLRPCClient and connects to doode.net
         client  = new BPXMLRPCClient( apiUrl );
         // TODO: need to call this inside an activity?
         //doodeDB = new DoodeDB( this );
+    }*/
+
+    public static void onRequestDone( Boolean success, Object result ) {
+    	// TODO: implement. there is no better way?
+    }
+
+    public static Context getAppContext() {
+    	return instance;
     }
 
 }

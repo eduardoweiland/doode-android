@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Doode</string>
+    <string name="username">Nome de usuário</string>
+    <string name="password">Senha</string>
+    <string name="login">Entrar</string>
+    <string name="app_description">Aplicativo oficial da rede social Doode para Android</string>
+    <string name="remember_login">Lembrar nesse dispositivo</string>
+    <string name="update_status_title">Novo status</string>
+    <string name="mentions_title">Menções</string>
+    <string name="whats_new">Quais as novidades?</string>
+    <string name="send">Enviar</string>
+    <string name="cancel">Cancelar</string>
+</resources>

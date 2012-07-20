@@ -23,6 +23,9 @@ import android.app.TabActivity;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.ImageButton;
 import android.widget.TabHost;
 
 public class MainView extends TabActivity {
@@ -38,6 +41,15 @@ public class MainView extends TabActivity {
 	    TabHost tabHost = getTabHost();  // The activity TabHost
 	    TabHost.TabSpec spec;            // Resusable TabSpec for each tab
 	    Intent intent;                   // Reusable Intent for each tab
+	    
+	    ((ImageButton) findViewById( R.id.btnCompose )).setOnClickListener( btnComposeClick );
+
+	    // Add HomeActivity tab
+	    intent = new Intent().setClass( this, HomeActivity.class );
+	    spec   = tabHost.newTabSpec  ( "home" )
+	    		        .setIndicator( res.getString(R.string.home_title) )
+	                    .setContent  ( intent );
+	    tabHost.addTab(spec);
 
 	    // Add UpdateStatusActivity tab
 	    intent = new Intent().setClass( this, UpdateStatusActivity.class );
@@ -53,6 +65,26 @@ public class MainView extends TabActivity {
 	                    .setContent  ( intent );
 	    tabHost.addTab(spec);
 
+	    // Add MessagesActivity tab
+	    intent = new Intent().setClass( this, MessagesActivity.class );
+	    spec   = tabHost.newTabSpec  ( "messages" )
+	    		        .setIndicator( res.getString(R.string.messages_title) )
+	                    .setContent  ( intent );
+	    tabHost.addTab(spec);
+
+	    // Add NotificationsActivity tab
+	    intent = new Intent().setClass( this, NotificationsActivity.class );
+	    spec   = tabHost.newTabSpec  ( "notifications" )
+	    		        .setIndicator( res.getString(R.string.notifications_title) )
+	                    .setContent  ( intent );
+	    tabHost.addTab(spec);
+
 	    tabHost.setCurrentTab(0);
 	}
+	
+	private OnClickListener btnComposeClick = new OnClickListener() {
+		public void onClick( View view ) {
+			startActivity( new Intent().setClass( Doode.getAppContext(), UpdateStatusActivity.class ) );
+        }
+	};
 }
