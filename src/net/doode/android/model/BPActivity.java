@@ -17,49 +17,71 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>  *
  **************************************************************************/
 
-package net.doode.android;
+package net.doode.android.model;
 
-import android.os.Bundle;
-import android.util.Log;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.Button;
-import android.widget.EditText;
+import java.util.Date;
 
-import com.actionbarsherlock.app.SherlockActivity;
-import com.actionbarsherlock.view.Menu;
+public class BPActivity {
 
-/**
- * Activity class for posting a new status update.
- *
- * @author Eduardo Weiland
- */
-public class UpdateStatusActivity extends SherlockActivity {
+    private int          mID;
+    private Date         mDate;
+    private String       mContent;
+    private BPUser       mBPUser;
+    private ActivityType mType;
 
-    @Override
-    protected void onCreate( Bundle savedInstanceState ) {
-        super.onCreate( savedInstanceState );
-        setContentView( R.layout.update_status );
-
-        ((Button) findViewById( R.id.btnSend )).setOnClickListener( btnSendClick );
+    public BPActivity(String pContent, BPUser pUser) {
+        setContent(pContent);
+        setUser(pUser);
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        menu.add("test"); // yep, this is a test
-        return super.onCreateOptionsMenu(menu);
-    };
+    public enum ActivityType {
+        activity_update,
+        new_forum_topic,
+        new_forum_post,
+        created_group,
+        joined_group,
+        friendship_accepted,
+        friendship_created,
+        new_member
+    }
 
-    OnClickListener btnSendClick = new OnClickListener() {
-        public void onClick(View view) {
-            String status = ((EditText) findViewById( R.id.txtStatusMessage )).getText().toString();
-            try {
-                Doode.client.updateProfileStatus( status );
-            }
-            catch ( Exception e ) {
-                Log.d( "DoodeAndroid", e.getMessage() );
-            }
-        }
-    };
+    public int getID() {
+        return mID;
+    }
 
+    public void setID(int ID) {
+        mID = ID;
+    }
+
+    public Date getDate() {
+        return mDate;
+    }
+
+    public void setDate(Date date) {
+        mDate = date;
+    }
+
+    public String getContent() {
+        return mContent;
+    }
+
+    public void setContent(String content) {
+        mContent = content;
+    }
+
+    public BPUser getUser() {
+        return mBPUser;
+    }
+
+    public void setUser(BPUser pUser) {
+        mBPUser = pUser;
+    }
+
+    public ActivityType getType() {
+        return mType;
+    }
+
+    public void setType(ActivityType type) {
+        mType = type;
+    }
 }

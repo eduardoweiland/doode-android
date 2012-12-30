@@ -19,47 +19,53 @@
 
 package net.doode.android;
 
+import net.doode.android.model.BPActivity;
+import net.doode.android.model.BPUser;
 import android.os.Bundle;
-import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.Button;
-import android.widget.EditText;
+import android.view.ViewGroup;
 
-import com.actionbarsherlock.app.SherlockActivity;
-import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.app.SherlockListFragment;
 
 /**
- * Activity class for posting a new status update.
- *
+ * Activity class for viewing and replying to public messages.
+ * 
  * @author Eduardo Weiland
  */
-public class UpdateStatusActivity extends SherlockActivity {
+public class ActivityFragment extends SherlockListFragment {
+
+    private ActivityListAdapter mAdapter;
 
     @Override
-    protected void onCreate( Bundle savedInstanceState ) {
-        super.onCreate( savedInstanceState );
-        setContentView( R.layout.update_status );
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
-        ((Button) findViewById( R.id.btnSend )).setOnClickListener( btnSendClick );
+        mAdapter = new ActivityListAdapter(getActivity());
+        setListAdapter(mAdapter);
+
+        BPUser user = new BPUser("Administrator", "admin");
+        mAdapter.add(new BPActivity("test 1", user));
+        mAdapter.add(new BPActivity("test 2", user));
+        mAdapter.add(new BPActivity("test 3", user));
+        mAdapter.add(new BPActivity("test 4", user));
+        mAdapter.add(new BPActivity("test 5", user));
+        mAdapter.add(new BPActivity("test 6", user));
+        mAdapter.add(new BPActivity("test 7", user));
+        mAdapter.add(new BPActivity("test 8", user));
+        mAdapter.add(new BPActivity("test 9", user));
+        mAdapter.add(new BPActivity("test 10", user));
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        menu.add("test"); // yep, this is a test
-        return super.onCreateOptionsMenu(menu);
-    };
+    public View onCreateView(LayoutInflater inflater, ViewGroup group, Bundle saved) {
+        return inflater.inflate(R.layout.activity, group, false);
+    }
 
-    OnClickListener btnSendClick = new OnClickListener() {
-        public void onClick(View view) {
-            String status = ((EditText) findViewById( R.id.txtStatusMessage )).getText().toString();
-            try {
-                Doode.client.updateProfileStatus( status );
-            }
-            catch ( Exception e ) {
-                Log.d( "DoodeAndroid", e.getMessage() );
-            }
-        }
-    };
+    @Override
+    public void onDestroy() {
+        mAdapter.clear();
+        super.onDestroy();
+    }
 
 }

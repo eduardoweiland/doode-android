@@ -28,80 +28,85 @@ import android.database.sqlite.SQLiteDatabase;
 
 public class DoodeDB {
 
+    public final static String TAG = "Doode/DoodeDB";
+
+    private SQLiteDatabase mDb;
+
     // DB structure
-    private static final int    DATABASE_VERSION = 1;
-    private static final String DATABASE_NAME    = "doode";
+    private final int DATABASE_VERSION = 1;
+    private final String DATABASE_NAME = "doode";
 
     // Table: settings
-    private static final String SETTINGS_TABLE        = "settings";
-    private static final String CREATE_TABLE_SETTINGS = "create table if not exists "
-            + SETTINGS_TABLE + " (id integer primary key autoincrement, username text, "
-            + "apikey text);";
+    // deprecated
+    private final String SETTINGS_TABLE = "settings";
+    private final String CREATE_TABLE_SETTINGS = "create table if not exists "
+            + SETTINGS_TABLE
+            + " (id integer primary key autoincrement, username text, apikey text);";
 
-    private SQLiteDatabase db;
+    // Table: activity
+    //private final String ACTIVITY_TABLE = "activity";
 
     /**
      * Constructor. Open a database connection and prepare it for use.
      * 
      * @param ctx
      */
-    public DoodeDB( Context ctx ) {
-        db = ctx.openOrCreateDatabase( DATABASE_NAME, 0, null );
+    public DoodeDB(Context ctx) {
+        mDb = ctx.openOrCreateDatabase(DATABASE_NAME, 0, null);
         prepareDB();
     }
-    
+
     /**
      * Prepare the database for use.
      */
     private void prepareDB() {
-        int version = db.getVersion();
+        int version = mDb.getVersion();
 
         // is a new installation
         if (version < 1) {
-            db.execSQL( CREATE_TABLE_SETTINGS );
-            db.setVersion( DATABASE_VERSION );
-        }
-
-        if ( db.needUpgrade( DATABASE_VERSION ) ) {
-            // future...
+            mDb.execSQL(CREATE_TABLE_SETTINGS);
+            mDb.setVersion(DATABASE_VERSION);
         }
     }
 
     /**
      * Saves login information on the database.
      * 
-     * @param username The user's username
-     * @param apikey   The user's apikey
+     * @param username
+     *            The user's username
+     * @param apikey
+     *            The user's apikey
      * @return True if the information was saved, false otherwise.
-     * @see ::loadLoginInfo()
+     * @see #loadLoginInfo()
      */
-    public boolean saveLoginInfo( String username, String apikey ) {
+    public boolean saveLoginInfo(String username, String apikey) {
         ContentValues values = new ContentValues();
-        values.put( "username", username );
-        values.put( "apikey",   apikey );
+        values.put("username", username);
+        values.put("apikey", apikey);
 
-        return ( db.insert( SETTINGS_TABLE, null, values ) > 0 );
+        return (mDb.insert(SETTINGS_TABLE, null, values) > 0);
     }
 
     /**
      * Load previously saved login info.
      * 
-     * @return A vector with username and apikey or null if not found. 
-     * @see ::saveLoginInfo()
+     * @return A vector with username and apikey or null if not found.
+     * @see #saveLoginInfo()
      */
     public Vector<String> loadLoginInfo() {
-        Cursor c = db.query( SETTINGS_TABLE, new String[] {"username", "apikey"},
-                             null, null, null, null, null );
-
-        c.moveToFirst();
-
+        Cursor c = mDb.query(SETTINGS_TABLE,
+                new String[] {"username", "apikey"}, null, null, null, null,
+                null);
         Vector<String> returnVector = new Vector<String>();
-        if ( c.getString(0) != null ) {
-            returnVector.add( c.getString(0) );
-            returnVector.add( c.getString(1) );
-        } else {
+
+        if (c.moveToFirst()) {
+            returnVector.add(c.getString(0));
+            returnVector.add(c.getString(1));
+        }
+        else {
             returnVector = null;
         }
+
         c.close();
 
         return returnVector;

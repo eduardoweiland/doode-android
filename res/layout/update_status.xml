@@ -2,66 +2,102 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true"
-    android:measureAllChildren="false" >
-	
-	<LinearLayout
-	    android:id="@+id/LinearLayout1"
-	    android:layout_width="match_parent"
-	    android:layout_height="wrap_content"
-	    android:orientation="vertical" >
-	
-	    <TextView
-	        android:id="@+id/textView1"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:layout_marginBottom="0dp"
-	        android:layout_marginLeft="16dp"
-	        android:layout_marginRight="16dp"
-	        android:layout_marginTop="8dp"
-	        android:text="@string/whats_new" />
-	
-	    <EditText
-	        android:id="@+id/txtStatusMessage"
-	        android:layout_width="match_parent"
-	        android:layout_height="0dp"
-	        android:layout_marginBottom="0dp"
-	        android:layout_marginLeft="16dp"
-	        android:layout_marginRight="16dp"
-	        android:layout_marginTop="8dp"
-	        android:layout_weight="1"
-	        android:gravity="top"
-	        android:hint="@string/whats_new"
-	        android:inputType="textMultiLine" >
-	
-	        <requestFocus />
-	    </EditText>
+    android:fillViewport="true" >
 
-	    <LinearLayout
-	        android:layout_width="match_parent"
-	        android:layout_height="wrap_content"
-	        android:layout_marginBottom="8dp"
-	        android:layout_marginLeft="16dp"
-	        android:layout_marginRight="16dp"
-	        android:layout_marginTop="8dp" >
+    <LinearLayout
+        android:id="@+id/LinearLayout1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" >
 
-	        <Button
-	            android:id="@+id/btnCancel"
-	            android:layout_width="wrap_content"
-	            android:layout_height="wrap_content"
-	            android:layout_weight="1"
-	            android:text="@string/cancel" />
+        <TextView
+            android:id="@+id/textView1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="0dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:layout_marginTop="8dp"
+            android:text="@string/whats_new" />
 
-	        <Button
-	            android:id="@+id/btnSend"
-	            android:layout_width="wrap_content"
-	            android:layout_height="wrap_content"
-	            android:layout_marginLeft="8dp"
-	            android:layout_weight="1"
-	            android:text="@string/send" />
-	
-	    </LinearLayout>
+        <EditText
+            android:id="@+id/txtStatusMessage"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginBottom="0dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:layout_marginTop="8dp"
+            android:layout_weight="1"
+            android:gravity="top"
+            android:hint="@string/whats_new"
+            android:inputType="textMultiLine" >
+    
+            <requestFocus />
+        </EditText>
 
-	</LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="0dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:layout_marginTop="8dp" >
+
+            <Button
+                android:id="@+id/btnCancel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/cancel" />
+
+            <Button
+                android:id="@+id/btnSend"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:layout_weight="1"
+                android:text="@string/send" />
+    
+        </LinearLayout>
+
+        <CheckBox
+            android:id="@+id/chbMoreOptions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:layout_marginTop="8dp"
+            android:text="@string/more_options" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone" >
+
+            <TextView
+                android:id="@+id/textView2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="0dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
+                android:layout_marginTop="0dp"
+                android:text="@string/post_to_group" />
+
+            <Spinner
+                android:id="@+id/spinPostToGroup"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="0dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
+                android:layout_marginTop="8dp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
 
 </ScrollView>

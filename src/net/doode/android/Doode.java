@@ -21,9 +21,8 @@ package net.doode.android;
 
 import android.app.Application;
 import android.content.Context;
-
-import net.doode.android.BPXMLRPCClient;
-import net.doode.android.DoodeDB;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 
 /**
  * Main application's class.
@@ -32,48 +31,39 @@ import net.doode.android.DoodeDB;
  */
 public class Doode extends Application {
 
-	private static Doode instance; 
+    private static Doode instance;
 
     public static BPXMLRPCClient client;
     public static DoodeDB        doodeDB;
     public static boolean        logged;
 
     // DEBUG: need to connect to an external device to test
-    final private String apiUrl = "http://192.168.0.47/blog/wp-content/plugins/buddypress-xmlrpc-receiver/bp-xmlrpc.php";
+    final private String apiUrl =
+            "http://10.0.0.2/blog/wp-content/plugins/buddypress-xmlrpc-receiver/bp-xmlrpc.php";
+
+    // deviceId (used as service name for BPXMLRPC)
+    final public static String deviceId =
+            "Doode Android (" + android.os.Build.MANUFACTURER + android.os.Build.MODEL + ")";
 
     /**
      * Constructor. Initialize the XML-RPC client and load settings.
      */
     @Override
     public void onCreate() {
-    	instance = this;
-    	
-        // Creates the XMLRPCClient and connects to doode.net
-        client  = new BPXMLRPCClient( apiUrl );
-        // TODO: need to call this inside an activity?
-        doodeDB = new DoodeDB( this );
+        super.onCreate();
 
-    	super.onCreate();
-    }
-    
-    /**
-     * Constructor. Initialize the XML-RPC client and load settings.
-     *
-    public Doode() {
-    	instance = this;
-    	
-        // Creates the XMLRPCClient and connects to doode.net
-        client  = new BPXMLRPCClient( apiUrl );
-        // TODO: need to call this inside an activity?
-        //doodeDB = new DoodeDB( this );
-    }*/
-
-    public static void onRequestDone( Boolean success, Object result ) {
-    	// TODO: implement. there is no better way?
+        client   = new BPXMLRPCClient(apiUrl);
+        doodeDB  = new DoodeDB(this);
+        instance = this;
     }
 
-    public static Context getAppContext() {
-    	return instance;
+    public static boolean isOnline() {
+        if (instance != null) {
+            ConnectivityManager connMgr =
+                    (ConnectivityManager) instance.getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo info = connMgr.getActiveNetworkInfo();
+            return (info != null && info.isConnected());
+        }
+        return false;
     }
-
 }

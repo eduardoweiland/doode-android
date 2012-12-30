@@ -20,46 +20,22 @@
 package net.doode.android;
 
 import android.os.Bundle;
-import android.util.Log;
+import android.support.v4.app.Fragment;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.Button;
-import android.widget.EditText;
-
-import com.actionbarsherlock.app.SherlockActivity;
-import com.actionbarsherlock.view.Menu;
+import android.view.ViewGroup;
 
 /**
- * Activity class for posting a new status update.
- *
+ * Activity class for viewing and replying to mentions.
+ * 
  * @author Eduardo Weiland
  */
-public class UpdateStatusActivity extends SherlockActivity {
+public class MentionsFragment extends Fragment {
 
     @Override
-    protected void onCreate( Bundle savedInstanceState ) {
-        super.onCreate( savedInstanceState );
-        setContentView( R.layout.update_status );
-
-        ((Button) findViewById( R.id.btnSend )).setOnClickListener( btnSendClick );
+    public View onCreateView(LayoutInflater inflater, ViewGroup group,
+            Bundle saved) {
+        return inflater.inflate(R.layout.update_status, group, false);
     }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        menu.add("test"); // yep, this is a test
-        return super.onCreateOptionsMenu(menu);
-    };
-
-    OnClickListener btnSendClick = new OnClickListener() {
-        public void onClick(View view) {
-            String status = ((EditText) findViewById( R.id.txtStatusMessage )).getText().toString();
-            try {
-                Doode.client.updateProfileStatus( status );
-            }
-            catch ( Exception e ) {
-                Log.d( "DoodeAndroid", e.getMessage() );
-            }
-        }
-    };
 
 }

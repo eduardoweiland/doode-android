@@ -1,14 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Doode</string>
-    <string name="username">Nome de usuário</string>
-    <string name="password">Senha</string>
-    <string name="login">Entrar</string>
+    <!-- app -->
+    <string name="app_name" translatable="false">Doode</string>
     <string name="app_description">Aplicativo oficial da rede social Doode para Android</string>
-    <string name="remember_login">Lembrar nesse dispositivo</string>
+
+    <!-- titles -->
+    <string name="activity_title">Atividade</string>
     <string name="update_status_title">Novo status</string>
     <string name="mentions_title">Menções</string>
+    <string name="messages_title">Mensagens</string>
+    <string name="notifications_title">Notificações</string>
+
+    <!-- menus -->
+    <string name="search">Pesquisar</string>
+    <string name="preferences">Configurações</string>
+    <string name="about">Sobre</string>
+
+    <!-- general messages -->
+    <string name="offline">Nenhuma rede disponível</string>
+
+    <!-- login -->
+    <string name="username">Nome de usuário</string>
+    <string name="login">Entrar</string>
+    <string name="login_message">Visite www.doode.net para completar o login.</string>
+
+    <!-- status updates -->
     <string name="whats_new">Quais as novidades?</string>
     <string name="send">Enviar</string>
     <string name="cancel">Cancelar</string>
+    <string name="more_options">Mais opções</string>
+    <string name="post_to_group">Postar no grupo</string>
 </resources>

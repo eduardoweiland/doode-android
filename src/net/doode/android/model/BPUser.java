@@ -17,49 +17,61 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>  *
  **************************************************************************/
 
-package net.doode.android;
+package net.doode.android.model;
 
-import android.os.Bundle;
-import android.util.Log;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.Button;
-import android.widget.EditText;
+import java.net.URI;
 
-import com.actionbarsherlock.app.SherlockActivity;
-import com.actionbarsherlock.view.Menu;
+public class BPUser {
 
-/**
- * Activity class for posting a new status update.
- *
- * @author Eduardo Weiland
- */
-public class UpdateStatusActivity extends SherlockActivity {
+    private String mDisplayName;
+    private String mUserName;
+    private URI    mAvatarUri;
+    private String mDistribution;
+    private String mProfession;
 
-    @Override
-    protected void onCreate( Bundle savedInstanceState ) {
-        super.onCreate( savedInstanceState );
-        setContentView( R.layout.update_status );
-
-        ((Button) findViewById( R.id.btnSend )).setOnClickListener( btnSendClick );
+    public BPUser(String name, String username) {
+        setDisplayName(name);
+        setUserName(username);
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        menu.add("test"); // yep, this is a test
-        return super.onCreateOptionsMenu(menu);
-    };
+    public String getDisplayName() {
+        return mDisplayName;
+    }
 
-    OnClickListener btnSendClick = new OnClickListener() {
-        public void onClick(View view) {
-            String status = ((EditText) findViewById( R.id.txtStatusMessage )).getText().toString();
-            try {
-                Doode.client.updateProfileStatus( status );
-            }
-            catch ( Exception e ) {
-                Log.d( "DoodeAndroid", e.getMessage() );
-            }
-        }
-    };
+    public void setDisplayName(String displayName) {
+        mDisplayName = displayName;
+    }
+
+    public String getUserName() {
+        return mUserName;
+    }
+
+    public void setUserName(String userName) {
+        mUserName = userName;
+    }
+
+    public URI getAvatarUri() {
+        return mAvatarUri;
+    }
+
+    public void setAvatarUri(URI avatarUri) {
+        mAvatarUri = avatarUri;
+    }
+
+    public String getDistribution() {
+        return mDistribution;
+    }
+
+    public void setDistribution(String distribution) {
+        mDistribution = distribution;
+    }
+
+    public String getProfession() {
+        return mProfession;
+    }
+
+    public void setProfession(String profession) {
+        mProfession = profession;
+    }
 
 }

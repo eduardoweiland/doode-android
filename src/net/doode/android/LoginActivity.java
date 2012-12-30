@@ -19,47 +19,58 @@
 
 package net.doode.android;
 
+import java.util.HashMap;
+
+import org.xmlrpc.android.XMLRPCException;
+
+import android.app.Activity;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 
-import com.actionbarsherlock.app.SherlockActivity;
-import com.actionbarsherlock.view.Menu;
-
-/**
- * Activity class for posting a new status update.
- *
- * @author Eduardo Weiland
- */
-public class UpdateStatusActivity extends SherlockActivity {
+public class LoginActivity extends Activity {
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) {
         super.onCreate( savedInstanceState );
-        setContentView( R.layout.update_status );
+        setContentView( R.layout.login );
 
-        ((Button) findViewById( R.id.btnSend )).setOnClickListener( btnSendClick );
+        ((Button) findViewById( R.id.btnLogin )).setOnClickListener( btnLoginClick );
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        menu.add("test"); // yep, this is a test
-        return super.onCreateOptionsMenu(menu);
-    };
-
-    OnClickListener btnSendClick = new OnClickListener() {
+    OnClickListener btnLoginClick = new OnClickListener() {
         public void onClick(View view) {
-            String status = ((EditText) findViewById( R.id.txtStatusMessage )).getText().toString();
-            try {
-                Doode.client.updateProfileStatus( status );
-            }
-            catch ( Exception e ) {
-                Log.d( "DoodeAndroid", e.getMessage() );
-            }
+            String username = ((EditText) findViewById( R.id.txtUsername )).toString();
+            RequestApiKeyTask task = new RequestApiKeyTask();
+            task.execute( username, Doode.deviceId );
         }
     };
+
+    private class RequestApiKeyTask extends AsyncTask<String, Void, String> {
+        @Override
+        protected void onPostExecute(String result) {
+            if ( result != null) {
+                // save option in DB
+                finish();
+            }
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+            try {
+                HashMap<?,?> result = (HashMap<?,?>) Doode.client.call( "bp.requestApiKey", params[0], params[1] );
+
+                if ( (Boolean) result.get( "confirmation" ) ) {
+                    return (String) result.get( "apikey" );
+                }
+            } catch (XMLRPCException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+    }
 
 }

@@ -29,13 +29,11 @@ import java.util.Map;
 import org.xmlrpc.android.XMLRPCClient;
 import org.xmlrpc.android.XMLRPCException;
 
-public class BPXMLRPCClient {
+public class BPXMLRPCClient extends XMLRPCClient {
 
-    final private XMLRPCClient client;
-
-    private String _username;
-    private String _password;
-   // private Object _params[];
+    private String mUserName;
+    private String mService;
+    private String mApiKey;
 
     /**
      * Initializes the client.
@@ -43,7 +41,7 @@ public class BPXMLRPCClient {
      * @param url The URL to connect
      */
     public BPXMLRPCClient( String url ) {
-        client = new XMLRPCClient( url );
+        super( url );
     }
 
     /**
@@ -52,7 +50,7 @@ public class BPXMLRPCClient {
      * @param url The URL to connect
      */
     public BPXMLRPCClient( URL url ) {
-        client = new XMLRPCClient( url );
+        super( url );
     }
 
     /**
@@ -61,7 +59,7 @@ public class BPXMLRPCClient {
      * @param uri The URL to connect
      */
     public BPXMLRPCClient( URI uri ) {
-        client = new XMLRPCClient( uri );
+        super( uri );
     }
 
     /**
@@ -69,11 +67,10 @@ public class BPXMLRPCClient {
      *
      * @param url      The URL to connect
      * @param username The user's login name
-     * @param password The user's password
      */
-    public BPXMLRPCClient( String url, String username, String password ) throws XMLRPCException {
-        client = new XMLRPCClient( url );
-        login( username, password );
+    public BPXMLRPCClient( String url, String username, String service, String apikey ) throws XMLRPCException {
+        super( url );
+        login( username, service, apikey );
     }
 
     /**
@@ -81,11 +78,10 @@ public class BPXMLRPCClient {
      *
      * @param url      The URL to connect
      * @param username The user's login name
-     * @param password The user's password
      */
-    public BPXMLRPCClient( URL url, String username, String password ) throws XMLRPCException {
-        client = new XMLRPCClient( url );
-        login( username, password );
+    public BPXMLRPCClient( URL url, String username, String service, String apikey ) throws XMLRPCException {
+        super( url );
+        login( username, service, apikey );
     }
 
     /**
@@ -93,22 +89,49 @@ public class BPXMLRPCClient {
      *
      * @param url      The URL to connect
      * @param username The user's login name
-     * @param password The user's password
      */
-    public BPXMLRPCClient( URI uri, String username, String password ) throws XMLRPCException {
-        client = new XMLRPCClient( uri );
-        login( username, password );
+    public BPXMLRPCClient( URI uri, String username, String service, String apikey ) throws XMLRPCException {
+        super( uri );
+        login( username, service, apikey );
+    }
+
+    public void requestApiKey( String username, String service ) throws XMLRPCException {
+        mUserName = username;
+        mService  = service;
+
+        final class RequestApiKeyTask extends AsyncTask<String, Void, String> {
+            @Override
+            protected void onPostExecute(String result) {
+                mApiKey = result;
+            }
+
+            @Override
+            protected String doInBackground(String... params) {
+                try {
+                    HashMap<?,?> result = (HashMap<?,?>) call( "bp.requestApiKey", params[0], params[1] );
+
+                    if ( (Boolean) result.get( "confirmation" ) ) {
+                        return (String) result.get( "apikey" );
+                    }
+                } catch (XMLRPCException e) {
+                    e.printStackTrace();
+                }
+                return null;
+            }
+        }
+
+        new RequestApiKeyTask().execute( username, service );
     }
 
     /**
      * Try to log-in the user.
      *
      * @param username The user's login name
-     * @param password The user's password
      */
-    public void login( String username, String password ) {
-        _username = username;
-        _password = password;
+    public void login( String username, String service, String apikey ) {
+        mUserName = username;
+        mService  = service;
+        mApiKey   = apikey;
 
         final class LoginTask extends AsyncTask<String, Void, Boolean> {
             @Override
@@ -119,7 +142,7 @@ public class BPXMLRPCClient {
             @Override
             protected Boolean doInBackground(String... params) {
                 try {
-                    client.call( "bp.verifyConnection", params[0], params[1] );
+                    call( "bp.verifyConnection", params[0], params[1], params[2] );
                     return true;
                 } catch (XMLRPCException e) {
                     e.printStackTrace();
@@ -127,26 +150,26 @@ public class BPXMLRPCClient {
                 return false;
             }
         }
-        
-        new LoginTask().execute( username, password );
+
+        new LoginTask().execute( username, service, apikey );
     }
 
-    public void updateProfileStatus( String status ) throws XMLRPCException {
+    public boolean updateProfileStatus( String status ) {
         Map<String, Object> data = new HashMap<String, Object>();
         data.put( "status", status );
 
         final class UpdateProfileStatusTask extends AsyncTask<Map<?, ?>, Void, Object> {
             @Override
             protected void onPostExecute( Object result ) {
-            	Boolean success = (Boolean) ((HashMap<?,?>) result).get( "confirmation" );
-                Doode.onRequestDone( success, result );
+                //Boolean success = (Boolean) ((HashMap<?,?>) result).get( "confirmation" );
+                //Doode.onRequestDone( success, result );
             }
 
             @Override
             protected Object doInBackground(Map<?, ?>... params) {
-            	Object result = null;
+                Object result = null;
                 try {
-                	result = client.call( "bp.updateProfileStatus", "teste", "f52dcbfad467e34c8b5d56987f0ebd1d", params[0] );
+                    result = call( "bp.updateProfileStatus", mUserName, mService, mApiKey, params[0] );
                 } catch (XMLRPCException e) {
                     e.printStackTrace();
                 }
@@ -155,6 +178,7 @@ public class BPXMLRPCClient {
         }
 
         new UpdateProfileStatusTask().execute( data );
+        return true;
     }
 
     public void getActivity( String scope, int max ) throws XMLRPCException {
@@ -162,7 +186,7 @@ public class BPXMLRPCClient {
         data.put( "scope", scope );
         data.put( "max"  , max   );
 
-        client.call( "bp.getActivity", _username, _password, data );
+        call( "bp.getActivity", mUserName, mService, mApiKey, data );
     }
 
     public void getActivity( String scope ) throws XMLRPCException {
@@ -177,7 +201,7 @@ public class BPXMLRPCClient {
         data.put( "blogpostpermalink", permalink );
         data.put( "blogpostid"       , postId    );
 
-        client.call( "bp.updateExternalBlogPostStatus", _username, _password, data );
+        call( "bp.updateExternalBlogPostStatus", mUserName, mService, mApiKey, data );
     }
 
     public void deleteExternalBlogPostStatus( String postId, String activityId) throws XMLRPCException {
@@ -185,27 +209,27 @@ public class BPXMLRPCClient {
         data.put( "blogpostid", postId     );
         data.put( "activityid", activityId );
 
-        client.call( "bp.deleteExternalBlogPostStatus", _username, _password, data );
+        call( "bp.deleteExternalBlogPostStatus", mUserName, mService, mApiKey, data );
     }
 
     public void getMyFriends() throws XMLRPCException {
-        client.call( "bp.getMyFriends", _username, _password );
+        call( "bp.getMyFriends", mUserName, mService, mApiKey );
     }
 
     public void getMyFollowers() throws XMLRPCException {
-        client.call( "bp.getMyFollowers", _username, _password );
+        call( "bp.getMyFollowers", mUserName, mService, mApiKey );
     }
 
     public void getMyFollowing() throws XMLRPCException {
-        client.call( "bp.getMyFollowing", _username, _password );
+        call( "bp.getMyFollowing", mUserName, mService, mApiKey );
     }
 
     public void getMyGroups() throws XMLRPCException {
-        client.call( "bp.getMyGroups", _username, _password );
+        call( "bp.getMyGroups", mUserName, mService, mApiKey );
     }
 
     public void getNotifications() throws XMLRPCException {
-        client.call( "bp.getNotifications", _username, _password );
+        call( "bp.getNotifications", mUserName, mService, mApiKey );
     }
 
 }
