@@ -1,6 +1,8 @@
 # generated binaries
 bin/*
 gen/*
+libs/*/bin/*
+libs/*/gen/*
 # IDE specific
 .settings/*
 .project
