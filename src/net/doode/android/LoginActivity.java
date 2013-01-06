@@ -19,57 +19,53 @@
 
 package net.doode.android;
 
-import java.util.HashMap;
-
-import org.xmlrpc.android.XMLRPCException;
-
 import android.app.Activity;
-import android.os.AsyncTask;
+import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 
-public class LoginActivity extends Activity {
+public class LoginActivity extends Activity implements OnClickListener {
+
+    public static final int RESULT_ERROR = RESULT_FIRST_USER + 1;
 
     @Override
-    protected void onCreate( Bundle savedInstanceState ) {
-        super.onCreate( savedInstanceState );
-        setContentView( R.layout.login );
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.login);
 
-        ((Button) findViewById( R.id.btnLogin )).setOnClickListener( btnLoginClick );
+        ((Button) findViewById(R.id.btnLogin)).setOnClickListener(this);
     }
 
-    OnClickListener btnLoginClick = new OnClickListener() {
-        public void onClick(View view) {
-            String username = ((EditText) findViewById( R.id.txtUsername )).toString();
-            RequestApiKeyTask task = new RequestApiKeyTask();
-            task.execute( username, Doode.deviceId );
-        }
-    };
+    private void doLogin() {
+        final String username = ((EditText) findViewById(R.id.txtUsername)).getText().toString();
+        final ProgressDialog wait = ProgressDialog.show(this,
+                getString(R.string.wait),
+                getString(R.string.logging),
+                true, false);
 
-    private class RequestApiKeyTask extends AsyncTask<String, Void, String> {
-        @Override
-        protected void onPostExecute(String result) {
-            if ( result != null) {
-                // save option in DB
+        Doode.client.requestApiKey(username, Doode.deviceId, new OnXMLRPCResult() {
+            public void onSuccess(Object result) {
+                wait.dismiss();
+                String apikey = (String) result;
+                Doode.doodeDB.saveLoginInfo(username, apikey);
                 finish();
             }
-        }
 
-        @Override
-        protected String doInBackground(String... params) {
-            try {
-                HashMap<?,?> result = (HashMap<?,?>) Doode.client.call( "bp.requestApiKey", params[0], params[1] );
-
-                if ( (Boolean) result.get( "confirmation" ) ) {
-                    return (String) result.get( "apikey" );
-                }
-            } catch (XMLRPCException e) {
-                e.printStackTrace();
+            public void onFault(int faultCode, String faultString) {
+                wait.dismiss();
+                finish();
             }
-            return null;
+        });
+    }
+
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.btnLogin:
+                doLogin();
+                break;
         }
     }
 

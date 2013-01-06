@@ -19,10 +19,13 @@
 
 package net.doode.android;
 
+import java.net.URI;
+
 import android.app.Application;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.util.Log;
 
 /**
  * Main application's class.
@@ -38,12 +41,12 @@ public class Doode extends Application {
     public static boolean        logged;
 
     // DEBUG: need to connect to an external device to test
-    final private String apiUrl =
-            "http://10.0.0.2/blog/wp-content/plugins/buddypress-xmlrpc-receiver/bp-xmlrpc.php";
+    final private URI apiUri =
+            URI.create("http://10.0.2.2/blog/wp-content/plugins/buddypress-xmlrpc-receiver/bp-xmlrpc.php");
 
     // deviceId (used as service name for BPXMLRPC)
     final public static String deviceId =
-            "Doode Android (" + android.os.Build.MANUFACTURER + android.os.Build.MODEL + ")";
+            "Doode Android (" + android.os.Build.MANUFACTURER + " " + android.os.Build.MODEL + ")";
 
     /**
      * Constructor. Initialize the XML-RPC client and load settings.
@@ -52,9 +55,15 @@ public class Doode extends Application {
     public void onCreate() {
         super.onCreate();
 
-        client   = new BPXMLRPCClient(apiUrl);
+        Log.i("Doode", "Using devideId = " + deviceId);
+
+        client   = new BPXMLRPCClient(apiUri);
         doodeDB  = new DoodeDB(this);
         instance = this;
+    }
+
+    public static Context getAppContext() {
+        return instance;
     }
 
     public static boolean isOnline() {

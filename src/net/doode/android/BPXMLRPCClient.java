@@ -19,8 +19,6 @@
 
 package net.doode.android;
 
-import android.os.AsyncTask;
-
 import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
@@ -29,19 +27,23 @@ import java.util.Map;
 import org.xmlrpc.android.XMLRPCClient;
 import org.xmlrpc.android.XMLRPCException;
 
+import android.os.AsyncTask;
+
 public class BPXMLRPCClient extends XMLRPCClient {
 
     private String mUserName;
     private String mService;
     private String mApiKey;
 
+    private final int DEFAULT_MAX_ACTIVITY = 35;
+
     /**
      * Initializes the client.
      *
      * @param url The URL to connect
      */
-    public BPXMLRPCClient( String url ) {
-        super( url );
+    public BPXMLRPCClient(String url) {
+        super(url);
     }
 
     /**
@@ -49,8 +51,8 @@ public class BPXMLRPCClient extends XMLRPCClient {
      *
      * @param url The URL to connect
      */
-    public BPXMLRPCClient( URL url ) {
-        super( url );
+    public BPXMLRPCClient(URL url) {
+        super(url);
     }
 
     /**
@@ -58,82 +60,111 @@ public class BPXMLRPCClient extends XMLRPCClient {
      *
      * @param uri The URL to connect
      */
-    public BPXMLRPCClient( URI uri ) {
-        super( uri );
+    public BPXMLRPCClient(URI uri) {
+        super(uri);
     }
 
     /**
      * Initializes the client and tries to log-in.
      *
-     * @param url      The URL to connect
+     * @param url The URL to connect
      * @param username The user's login name
+     * @param service The service name
+     * @param apikey The generated ApiKey
      */
-    public BPXMLRPCClient( String url, String username, String service, String apikey ) throws XMLRPCException {
-        super( url );
-        login( username, service, apikey );
+    public BPXMLRPCClient(String url, String username, String service, String apikey)
+            throws XMLRPCException {
+        super(url);
+        login(username, service, apikey);
     }
 
     /**
      * Initializes the client and tries to log-in.
      *
-     * @param url      The URL to connect
+     * @param url The URL to connect
      * @param username The user's login name
+     * @param service The service name
+     * @param apikey The generated ApiKey
      */
-    public BPXMLRPCClient( URL url, String username, String service, String apikey ) throws XMLRPCException {
-        super( url );
-        login( username, service, apikey );
+    public BPXMLRPCClient(URL url, String username, String service, String apikey)
+            throws XMLRPCException {
+        super(url);
+        login(username, service, apikey);
     }
 
     /**
      * Initializes the client and tries to log-in.
      *
-     * @param url      The URL to connect
+     * @param url The URL to connect
      * @param username The user's login name
+     * @param service The service name
+     * @param apikey The generated ApiKey
      */
-    public BPXMLRPCClient( URI uri, String username, String service, String apikey ) throws XMLRPCException {
-        super( uri );
-        login( username, service, apikey );
+    public BPXMLRPCClient(URI uri, String username, String service, String apikey)
+            throws XMLRPCException {
+        super(uri);
+        login(username, service, apikey);
     }
 
-    public void requestApiKey( String username, String service ) throws XMLRPCException {
+    /**
+     * Request a new service ApiKey for authentication.
+     *
+     * @param username Username to connect
+     * @param service Service name to connect
+     * @param callback Called on result
+     */
+    public void requestApiKey(String username, String service, final OnXMLRPCResult callback) {
         mUserName = username;
-        mService  = service;
+        mService = service;
 
         final class RequestApiKeyTask extends AsyncTask<String, Void, String> {
+
             @Override
             protected void onPostExecute(String result) {
-                mApiKey = result;
+                if (result != null) {
+                    mApiKey = result;
+                    callback.onSuccess(result);
+                }
+                else {
+                    callback.onFault(0, "");
+                }
             }
 
             @Override
             protected String doInBackground(String... params) {
                 try {
-                    HashMap<?,?> result = (HashMap<?,?>) call( "bp.requestApiKey", params[0], params[1] );
+                    Object result = call("bp.requestApiKey", params[0], params[1]);
+                    if (result != null) {
+                        HashMap<?,?> map = (HashMap<?,?>) result;
 
-                    if ( (Boolean) result.get( "confirmation" ) ) {
-                        return (String) result.get( "apikey" );
+                        if ((Boolean) map.get("confirmation")) {
+                            return (String) map.get("apikey");
+                        }
                     }
-                } catch (XMLRPCException e) {
+                }
+                catch (/*XMLRPC*/Exception e) {
                     e.printStackTrace();
                 }
                 return null;
             }
         }
 
-        new RequestApiKeyTask().execute( username, service );
+        new RequestApiKeyTask().execute(username, service);
     }
 
     /**
      * Try to log-in the user.
      *
-     * @param username The user's login name
+     * @param username
+     *            The user's login name
      */
-    public void login( String username, String service, String apikey ) {
+    public void login(String username, String service, String apikey) {
         mUserName = username;
-        mService  = service;
-        mApiKey   = apikey;
+        mService = service;
+        mApiKey = apikey;
 
         final class LoginTask extends AsyncTask<String, Void, Boolean> {
+
             @Override
             protected void onPostExecute(Boolean result) {
                 Doode.logged = result;
@@ -142,94 +173,146 @@ public class BPXMLRPCClient extends XMLRPCClient {
             @Override
             protected Boolean doInBackground(String... params) {
                 try {
-                    call( "bp.verifyConnection", params[0], params[1], params[2] );
+                    call("bp.verifyConnection", params[0], params[1], params[2]);
                     return true;
-                } catch (XMLRPCException e) {
+                }
+                catch (XMLRPCException e) {
                     e.printStackTrace();
                 }
                 return false;
             }
         }
 
-        new LoginTask().execute( username, service, apikey );
+        new LoginTask().execute(username, service, apikey);
     }
 
-    public boolean updateProfileStatus( String status ) {
-        Map<String, Object> data = new HashMap<String, Object>();
-        data.put( "status", status );
+    /**
+     * Send a new status update to the server.
+     *
+     * @param status The status to be posted
+     * @param callback Called on result
+     */
+    public void updateProfileStatus(String status, final OnXMLRPCResult callback) {
+//        Map<String, Object> data = new HashMap<String, Object>();
+//        data.put("status", status);
 
-        final class UpdateProfileStatusTask extends AsyncTask<Map<?, ?>, Void, Object> {
+        final class UpdateProfileStatusTask extends AsyncTask<String, Void, Object> {
+
             @Override
-            protected void onPostExecute( Object result ) {
-                //Boolean success = (Boolean) ((HashMap<?,?>) result).get( "confirmation" );
-                //Doode.onRequestDone( success, result );
+            protected void onPostExecute(Object result) {
+                if (result != null) {
+                    Boolean success = (Boolean) ((HashMap<?,?>) result).get("confirmation");
+                    if (success) {
+                        callback.onSuccess(result);
+                        return;
+                    }
+                }
+                callback.onFault(-1, "");
             }
 
             @Override
-            protected Object doInBackground(Map<?, ?>... params) {
+            protected Object doInBackground(String... params) {
                 Object result = null;
                 try {
-                    result = call( "bp.updateProfileStatus", mUserName, mService, mApiKey, params[0] );
-                } catch (XMLRPCException e) {
+                    result = call("bp.updateProfileStatus", mUserName, mService, mApiKey, params[0]);
+                }
+                catch (XMLRPCException e) {
                     e.printStackTrace();
                 }
                 return result;
             }
         }
 
-        new UpdateProfileStatusTask().execute( data );
-        return true;
+        new UpdateProfileStatusTask().execute(status);
     }
 
-    public void getActivity( String scope, int max ) throws XMLRPCException {
+    /**
+     * Get a list of site activity. This can be filtered with {@link scope}.
+     *
+     * @param scope Scope for filtering site activity. See {@link BPActivityScope}.
+     * @param max Maximum of status updates to be retrieved.
+     * @param callback Called on result.
+     */
+    public void getActivity(String scope, int max, final OnXMLRPCResult callback) {
         Map<String, Object> data = new HashMap<String, Object>();
-        data.put( "scope", scope );
-        data.put( "max"  , max   );
+        data.put("scope", scope);
+        data.put("max", max);
 
-        call( "bp.getActivity", mUserName, mService, mApiKey, data );
+        final class GetActivityTask extends AsyncTask<Map<?, ?>, Void, Object> {
+
+            @Override
+            protected void onPostExecute(Object result) {
+                if (result != null) {
+                    Boolean success = (Boolean) ((HashMap<?,?>) result).get("confirmation");
+                    if (success) {
+                        callback.onSuccess(result);
+                        return;
+                    }
+                }
+                callback.onFault(-1, "");
+            }
+
+            @Override
+            protected Object doInBackground(Map<?, ?>... params) {
+                Object result = null;
+                try {
+                    result = call("bp.updateProfileStatus", mUserName, mService, mApiKey, params[0]);
+                }
+                catch (XMLRPCException e) {
+                    e.printStackTrace();
+                }
+                return result;
+            }
+        }
+
+        new GetActivityTask().execute(data);
     }
 
-    public void getActivity( String scope ) throws XMLRPCException {
-        getActivity( scope, 35 );
+    public void getActivity(String scope, final OnXMLRPCResult callback) {
+        getActivity(scope, DEFAULT_MAX_ACTIVITY, callback);
     }
 
-    public void updateExternalBlogPostStatus( String status, String title, String url, String permalink, String postId ) throws XMLRPCException {
+    public void updateExternalBlogPostStatus(String status, String title,
+            String url, String permalink, String postId) throws XMLRPCException {
         Map<String, Object> data = new HashMap<String, Object>();
-        data.put( "status"           , status    );
-        data.put( "blogtitle"        , title     );
-        data.put( "blogurl"          , url       );
-        data.put( "blogpostpermalink", permalink );
-        data.put( "blogpostid"       , postId    );
+        data.put("status", status);
+        data.put("blogtitle", title);
+        data.put("blogurl", url);
+        data.put("blogpostpermalink", permalink);
+        data.put("blogpostid", postId);
 
-        call( "bp.updateExternalBlogPostStatus", mUserName, mService, mApiKey, data );
+        call("bp.updateExternalBlogPostStatus", mUserName, mService, mApiKey,
+                data);
     }
 
-    public void deleteExternalBlogPostStatus( String postId, String activityId) throws XMLRPCException {
+    public void deleteExternalBlogPostStatus(String postId, String activityId)
+            throws XMLRPCException {
         Map<String, Object> data = new HashMap<String, Object>();
-        data.put( "blogpostid", postId     );
-        data.put( "activityid", activityId );
+        data.put("blogpostid", postId);
+        data.put("activityid", activityId);
 
-        call( "bp.deleteExternalBlogPostStatus", mUserName, mService, mApiKey, data );
+        call("bp.deleteExternalBlogPostStatus", mUserName, mService, mApiKey,
+                data);
     }
 
     public void getMyFriends() throws XMLRPCException {
-        call( "bp.getMyFriends", mUserName, mService, mApiKey );
+        call("bp.getMyFriends", mUserName, mService, mApiKey);
     }
 
     public void getMyFollowers() throws XMLRPCException {
-        call( "bp.getMyFollowers", mUserName, mService, mApiKey );
+        call("bp.getMyFollowers", mUserName, mService, mApiKey);
     }
 
     public void getMyFollowing() throws XMLRPCException {
-        call( "bp.getMyFollowing", mUserName, mService, mApiKey );
+        call("bp.getMyFollowing", mUserName, mService, mApiKey);
     }
 
     public void getMyGroups() throws XMLRPCException {
-        call( "bp.getMyGroups", mUserName, mService, mApiKey );
+        call("bp.getMyGroups", mUserName, mService, mApiKey);
     }
 
     public void getNotifications() throws XMLRPCException {
-        call( "bp.getNotifications", mUserName, mService, mApiKey );
+        call("bp.getNotifications", mUserName, mService, mApiKey);
     }
 
 }
