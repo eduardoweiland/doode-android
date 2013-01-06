@@ -8,6 +8,7 @@ import java.io.StringWriter;
 import java.net.URI;
 import java.net.URL;
 import java.util.Map;
+import java.util.Vector;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -16,8 +17,13 @@ import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.scheme.PlainSocketFactory;
+import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.scheme.SchemeRegistry;
+import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.params.HttpParams;
 import org.apache.http.params.HttpProtocolParams;
 import org.xmlpull.v1.XmlPullParser;
@@ -25,15 +31,15 @@ import org.xmlpull.v1.XmlPullParserFactory;
 
 /**
  * XMLRPCClient allows to call remote XMLRPC method.
- * 
+ *
  * <p>
  * The following table shows how XML-RPC types are mapped to java call parameters/response values.
  * </p>
- * 
+ *
  * <p>
  * <table border="2" align="center" cellpadding="5">
  * <thead><tr><th>XML-RPC Type</th><th>Call Parameters</th><th>Call Response</th></tr></thead>
- * 
+ *
  * <tbody>
  * <td>int, i4</td><td>byte<br />Byte<br />short<br />Short<br />int<br />Integer</td><td>int<br />Integer</td>
  * </tr>
@@ -74,23 +80,64 @@ public class XMLRPCClient extends XMLRPCCommon {
 	private HttpClient client;
 	private HttpPost postMethod;
 	private HttpParams httpParams;
+	// These variables used in the code inspired by erickok in issue #6
+	private boolean httpPreAuth = false;
+	private String username = "";
+	private String password = "";
 
 	/**
 	 * XMLRPCClient constructor. Creates new instance based on server URI
+	 * (Code contributed by sgayda2 from issue #17, and by erickok from ticket #10)
+	 *
 	 * @param XMLRPC server URI
 	 */
 	public XMLRPCClient(URI uri) {
+		SchemeRegistry registry = new SchemeRegistry();
+		registry.register(new Scheme("http", new PlainSocketFactory(), 80));
+		registry.register(new Scheme("https", SSLSocketFactory.getSocketFactory(), 443));
+
 		postMethod = new HttpPost(uri);
 		postMethod.addHeader("Content-Type", "text/xml");
-		
+
 		// WARNING
-		// I had to disable "Expect: 100-Continue" header since I had 
-		// two second delay between sending http POST request and POST body 
+		// I had to disable "Expect: 100-Continue" header since I had
+		// two second delay between sending http POST request and POST body
 		httpParams = postMethod.getParams();
 		HttpProtocolParams.setUseExpectContinue(httpParams, false);
-		client = new DefaultHttpClient();
+		this.client = new DefaultHttpClient(new ThreadSafeClientConnManager(httpParams, registry), httpParams);
 	}
-	
+
+	/**
+	 * XMLRPCClient constructor. Creates new instance based on server URI
+	 * (Code contributed by sgayda2 from issue #17)
+	 *
+	 * @param XMLRPC server URI
+	 * @param HttpClient to use
+	 */
+
+	public XMLRPCClient(URI uri, HttpClient client) {
+		postMethod = new HttpPost(uri);
+		postMethod.addHeader("Content-Type", "text/xml");
+
+		// WARNING
+		// I had to disable "Expect: 100-Continue" header since I had
+		// two second delay between sending http POST request and POST body
+		httpParams = postMethod.getParams();
+		HttpProtocolParams.setUseExpectContinue(httpParams, false);
+		this.client = client;
+	}
+
+	/**
+	 * Amends user agent
+	 * (Code contributed by mortenholdflod from issue #28)
+	 *
+	 * @param userAgent defining the new User Agent string
+	 */
+	public void setUserAgent(String userAgent) {
+		postMethod.removeHeaders("User-Agent");
+		postMethod.addHeader("User-Agent", userAgent);
+	}
+
 	/**
 	 * Convenience constructor. Creates new instance based on server String address
 	 * @param XMLRPC server address
@@ -98,6 +145,16 @@ public class XMLRPCClient extends XMLRPCCommon {
 	public XMLRPCClient(String url) {
 		this(URI.create(url));
 	}
+
+	/**
+	 * Convenience constructor. Creates new instance based on server String address
+	 * @param XMLRPC server address
+	 * @param HttpClient to use
+	 */
+	public XMLRPCClient(String url, HttpClient client) {
+		this(URI.create(url), client);
+	}
+
 
 	/**
 	 * Convenience XMLRPCClient constructor. Creates new instance based on server URL
@@ -108,15 +165,39 @@ public class XMLRPCClient extends XMLRPCCommon {
 	}
 
 	/**
+	 * Convenience XMLRPCClient constructor. Creates new instance based on server URL
+	 * @param XMLRPC server URL
+	 * @param HttpClient to use
+	 */
+	public XMLRPCClient(URL url, HttpClient client) {
+		this(URI.create(url.toExternalForm()), client);
+	}
+
+	/**
 	 * Convenience constructor. Creates new instance based on server String address
 	 * @param XMLRPC server address
 	 * @param HTTP Server - Basic Authentication - Username
 	 * @param HTTP Server - Basic Authentication - Password
-	 */	
+	 */
 	public XMLRPCClient(URI uri, String username, String password) {
         this(uri);
-        
+
         ((DefaultHttpClient) client).getCredentialsProvider().setCredentials(
+        new AuthScope(uri.getHost(), uri.getPort(),AuthScope.ANY_REALM),
+        new UsernamePasswordCredentials(username, password));
+    }
+
+	/**
+	 * Convenience constructor. Creates new instance based on server String address
+	 * @param XMLRPC server address
+	 * @param HTTP Server - Basic Authentication - Username
+	 * @param HTTP Server - Basic Authentication - Password
+	 * @param HttpClient to use
+	 */
+	public XMLRPCClient(URI uri, String username, String password, HttpClient client) {
+        this(uri, client);
+
+        ((DefaultHttpClient) this.client).getCredentialsProvider().setCredentials(
         new AuthScope(uri.getHost(), uri.getPort(),AuthScope.ANY_REALM),
         new UsernamePasswordCredentials(username, password));
     }
@@ -133,6 +214,17 @@ public class XMLRPCClient extends XMLRPCCommon {
 
 	/**
 	 * Convenience constructor. Creates new instance based on server String address
+	 * @param XMLRPC server address
+	 * @param HTTP Server - Basic Authentication - Username
+	 * @param HTTP Server - Basic Authentication - Password
+	 * @param HttpClient to use
+	 */
+	public XMLRPCClient(String url, String username, String password, HttpClient client) {
+		this(URI.create(url), username, password, client);
+	}
+
+	/**
+	 * Convenience constructor. Creates new instance based on server String address
 	 * @param XMLRPC server url
 	 * @param HTTP Server - Basic Authentication - Username
 	 * @param HTTP Server - Basic Authentication - Password
@@ -142,22 +234,47 @@ public class XMLRPCClient extends XMLRPCCommon {
 	}
 
 	/**
+	 * Convenience constructor. Creates new instance based on server String address
+	 * @param XMLRPC server url
+	 * @param HTTP Server - Basic Authentication - Username
+	 * @param HTTP Server - Basic Authentication - Password
+	 * @param HttpClient to use
+	 */
+	public XMLRPCClient(URL url, String username, String password, HttpClient client) {
+		this(URI.create(url.toExternalForm()), username, password, client);
+	}
+
+	/**
 	 * Sets basic authentication on web request using plain credentials
+	 * @param username The plain text username
+	 * @param password The plain text password
+	 * @param doPreemptiveAuth Select here whether to authenticate without it being requested first by the server.
+	 */
+	public void setBasicAuthentication(String username, String password, boolean doPreemptiveAuth) {
+		// This code required to trigger the patch created by erickok in issue #6
+		if(doPreemptiveAuth = true) {
+			this.httpPreAuth = doPreemptiveAuth;
+			this.username = username;
+			this.password = password;
+		} else {
+			((DefaultHttpClient) client).getCredentialsProvider().setCredentials(new AuthScope(postMethod.getURI().getHost(), postMethod.getURI().getPort(), AuthScope.ANY_REALM), new UsernamePasswordCredentials(username, password));
+		}
+	}
+
+	/**
+	 * Convenience Constructor: Sets basic authentication on web request using plain credentials
 	 * @param username The plain text username
 	 * @param password The plain text password
 	 */
 	public void setBasicAuthentication(String username, String password) {
-		((DefaultHttpClient) client).getCredentialsProvider().setCredentials(
-		        new AuthScope(postMethod.getURI().getHost(), postMethod.getURI().getPort(),
-AuthScope.ANY_REALM),
-		        new UsernamePasswordCredentials(username, password));
+		setBasicAuthentication(username, password, false);
 	}
 
 	/**
 	 * Call method with optional parameters. This is general method.
 	 * If you want to call your method with 0-8 parameters, you can use more
 	 * convenience call() methods
-	 * 
+	 *
 	 * @param method name of method to call
 	 * @param params parameters to pass to method (may be null if method has no parameters)
 	 * @return deserialized method return value
@@ -173,6 +290,15 @@ AuthScope.ANY_REALM),
 			HttpEntity entity = new StringEntity(body);
 			postMethod.setEntity(entity);
 
+			// This code slightly tweaked from the code by erickok in issue #6
+			// Force preemptive authentication
+			// This makes sure there is an 'Authentication: ' header being send before trying and failing and retrying
+			// by the basic authentication mechanism of DefaultHttpClient
+			if(this.httpPreAuth == true) {
+				String auth = this.username + ":" + this.password;
+				postMethod.addHeader("Authorization", "Basic " + Base64Coder.encode(auth.getBytes()).toString());
+			}
+
 			//Log.d(Tag.LOG, "ros HTTP POST");
 			// execute HTTP POST request
 			HttpResponse response = client.execute(postMethod);
@@ -181,9 +307,9 @@ AuthScope.ANY_REALM),
 			// check status code
 			int statusCode = response.getStatusLine().getStatusCode();
 			//Log.d(Tag.LOG, "ros status code:" + statusCode);
-			if (statusCode != HttpStatus.SC_OK) {
-				throw new XMLRPCException("HTTP status code: " + statusCode + " != " + HttpStatus.SC_OK);
-			}
+            if (statusCode != HttpStatus.SC_OK) {
+                throw new XMLRPCException("HTTP status code: " + statusCode + " != " + HttpStatus.SC_OK, statusCode);
+            }
 
 			// parse response stuff
 			//
@@ -194,12 +320,12 @@ AuthScope.ANY_REALM),
 // for testing purposes only
 // reader = new StringReader("<?xml version='1.0'?><methodResponse><params><param><value>\n\n\n</value></param></params></methodResponse>");
 			pullParser.setInput(reader);
-			
+
 			// lets start pulling...
 			pullParser.nextTag();
 			pullParser.require(XmlPullParser.START_TAG, null, Tag.METHOD_RESPONSE);
-			
-			pullParser.nextTag(); // either Tag.PARAMS (<params>) or Tag.FAULT (<fault>)  
+
+			pullParser.nextTag(); // either Tag.PARAMS (<params>) or Tag.FAULT (<fault>)
 			String tag = pullParser.getName();
 			if (tag.equals(Tag.PARAMS)) {
 				// normal response
@@ -207,7 +333,7 @@ AuthScope.ANY_REALM),
 				pullParser.require(XmlPullParser.START_TAG, null, Tag.PARAM);
 				pullParser.nextTag(); // Tag.VALUE (<value>)
 				// no parser.require() here since its called in XMLRPCSerializer.deserialize() below
-				
+
 				// deserialize result
 				Object obj = iXMLRPCSerializer.deserialize(pullParser);
 				entity.consumeContent();
@@ -237,7 +363,7 @@ AuthScope.ANY_REALM),
 			throw new XMLRPCException(e);
 		}
 	}
-	
+
 	private String methodCall(String method, Object[] params)
 	throws IllegalArgumentException, IllegalStateException, IOException {
 		StringWriter bodyWriter = new StringWriter();
@@ -246,7 +372,7 @@ AuthScope.ANY_REALM),
 		serializer.startTag(null, Tag.METHOD_CALL);
 		// set method name
 		serializer.startTag(null, Tag.METHOD_NAME).text(method).endTag(null, Tag.METHOD_NAME);
-		
+
 		serializeParams(params);
 
 		serializer.endTag(null, Tag.METHOD_CALL);
@@ -257,7 +383,7 @@ AuthScope.ANY_REALM),
 
 	/**
 	 * Convenience method call with no parameters
-	 * 
+	 *
 	 * @param method name of method to call
 	 * @return deserialized method return value
 	 * @throws XMLRPCException
@@ -265,10 +391,27 @@ AuthScope.ANY_REALM),
 	public Object call(String method) throws XMLRPCException {
 		return callEx(method, null);
 	}
-	
+
+	/**
+	 * Convenience method call with a vectorized parameter
+     * (Code contributed by jahbromo from issue #14)
+	 * @param method name of method to call
+	 * @param paramsv vector of method's parameter
+	 * @return deserialized method return value
+	 * @throws XMLRPCException
+	 */
+
+	public Object call(String method, Vector<?> paramsv) throws XMLRPCException {
+		Object[] params = new Object [paramsv.size()];
+		for (int i=0; i<paramsv.size(); i++) {
+			params[i]=paramsv.elementAt(i);
+		}
+		return callEx(method, params);
+	}
+
 	/**
 	 * Convenience method call with one parameter
-	 * 
+	 *
 	 * @param method name of method to call
 	 * @param p0 method's parameter
 	 * @return deserialized method return value
@@ -280,10 +423,10 @@ AuthScope.ANY_REALM),
 		};
 		return callEx(method, params);
 	}
-	
+
 	/**
 	 * Convenience method call with two parameters
-	 * 
+	 *
 	 * @param method name of method to call
 	 * @param p0 method's 1st parameter
 	 * @param p1 method's 2nd parameter
@@ -296,10 +439,10 @@ AuthScope.ANY_REALM),
 		};
 		return callEx(method, params);
 	}
-	
+
 	/**
 	 * Convenience method call with three parameters
-	 * 
+	 *
 	 * @param method name of method to call
 	 * @param p0 method's 1st parameter
 	 * @param p1 method's 2nd parameter
@@ -316,7 +459,7 @@ AuthScope.ANY_REALM),
 
 	/**
 	 * Convenience method call with four parameters
-	 * 
+	 *
 	 * @param method name of method to call
 	 * @param p0 method's 1st parameter
 	 * @param p1 method's 2nd parameter
@@ -334,7 +477,7 @@ AuthScope.ANY_REALM),
 
 	/**
 	 * Convenience method call with five parameters
-	 * 
+	 *
 	 * @param method name of method to call
 	 * @param p0 method's 1st parameter
 	 * @param p1 method's 2nd parameter
@@ -353,7 +496,7 @@ AuthScope.ANY_REALM),
 
 	/**
 	 * Convenience method call with six parameters
-	 * 
+	 *
 	 * @param method name of method to call
 	 * @param p0 method's 1st parameter
 	 * @param p1 method's 2nd parameter
@@ -373,7 +516,7 @@ AuthScope.ANY_REALM),
 
 	/**
 	 * Convenience method call with seven parameters
-	 * 
+	 *
 	 * @param method name of method to call
 	 * @param p0 method's 1st parameter
 	 * @param p1 method's 2nd parameter
@@ -394,7 +537,7 @@ AuthScope.ANY_REALM),
 
 	/**
 	 * Convenience method call with eight parameters
-	 * 
+	 *
 	 * @param method name of method to call
 	 * @param p0 method's 1st parameter
 	 * @param p1 method's 2nd parameter
