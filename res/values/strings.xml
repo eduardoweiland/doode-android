@@ -5,11 +5,11 @@
     <string name="app_description">Official Doode app for Android</string>
 
     <!-- titles -->
-    <string name="activity_title">Activity</string>
-    <string name="update_status_title">New status</string>
-    <string name="mentions_title">Mentions</string>
-    <string name="messages_title">Messages</string>
-    <string name="notifications_title">Notifications</string>
+    <string name="activity">Activity</string>
+    <string name="update_status">New status</string>
+    <string name="mentions">Mentions</string>
+    <string name="messages">Messages</string>
+    <string name="notifications">Notifications</string>
 
     <!-- menus -->
     <string name="search">Search</string>
@@ -18,16 +18,22 @@
 
     <!-- general messages -->
     <string name="offline">No network available</string>
+    <string name="wait">Wait</string>
 
     <!-- login -->
     <string name="username">Username</string>
     <string name="login">Login</string>
     <string name="login_message">Visit www.doode.net to complete the login.</string>
+    <string name="logging">Logging&#8230;</string>
 
     <!-- status updates -->
     <string name="whats_new">What\'s new?</string>
     <string name="send">Send</string>
     <string name="cancel">Cancel</string>
-    <string name="more_options">More options</string>
-    <string name="post_to_group">Post to group</string>
+    <string name="post_in">Post in</string>
+    <string name="sending_update">Sending status update&#8230;</string>
+
+    <string-array name="post_to_group_list">
+        <item >My profile</item>
+    </string-array>
 </resources>

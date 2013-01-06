@@ -3,7 +3,6 @@
     android:id="@+id/layout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/bgdoode"
     android:fitsSystemWindows="true"
     android:orientation="vertical" >
 
@@ -11,11 +10,14 @@
         android:id="@+id/imgLogo"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
+        android:layout_marginBottom="32dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginTop="32dp"
         android:adjustViewBounds="true"
         android:contentDescription="@string/app_name"
         android:scaleType="centerInside"
-        android:src="@drawable/ic_launcher" />
+        android:src="@drawable/doode_logo" />
 
     <EditText
         android:id="@+id/txtUsername"
@@ -41,5 +43,16 @@
         android:layout_marginBottom="0dp"
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp" />
+
+    <TextView
+        android:id="@+id/viewLoginMessage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="0dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginTop="0dp"
+        android:text="@string/login_message"
+        android:visibility="gone" />
 
 </LinearLayout>

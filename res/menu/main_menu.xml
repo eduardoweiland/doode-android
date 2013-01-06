@@ -3,17 +3,17 @@
 
     <item android:id="@+id/menu_search"
           android:icon="@android:drawable/ic_menu_search"
-          android:showAsAction="ifRoom|withText"
+          android:showAsAction="ifRoom"
           android:title="@string/search"/>
 
     <item android:id="@+id/menu_update_status"
           android:icon="@android:drawable/ic_menu_edit"
-          android:showAsAction="ifRoom|withText"
-          android:title="@string/update_status_title"/>
+          android:showAsAction="ifRoom"
+          android:title="@string/update_status"/>
 
     <item android:id="@+id/menu_notifications"
           android:showAsAction="always"
-          android:title="@string/notifications_title" />
+          android:title="@string/notifications" />
 
     <item android:id="@+id/menu_preferences"
           android:icon="@android:drawable/ic_menu_preferences"

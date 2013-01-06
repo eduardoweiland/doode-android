@@ -32,17 +32,42 @@
             android:gravity="top"
             android:hint="@string/whats_new"
             android:inputType="textMultiLine" >
-    
+
             <requestFocus />
         </EditText>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="0dp"
+            android:layout_marginBottom="8dp"
             android:layout_marginLeft="16dp"
             android:layout_marginRight="16dp"
-            android:layout_marginTop="8dp" >
+            android:layout_marginTop="8dp"
+            android:orientation="vertical" >
+
+            <TextView
+                android:id="@+id/textView2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:text="@string/post_in" />
+
+            <Spinner
+                android:id="@+id/spinPostIn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:entries="@array/post_to_group_list"
+                android:prompt="@string/post_in" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:layout_marginTop="0dp" >
 
             <Button
                 android:id="@+id/btnCancel"
@@ -58,43 +83,6 @@
                 android:layout_marginLeft="8dp"
                 android:layout_weight="1"
                 android:text="@string/send" />
-    
-        </LinearLayout>
-
-        <CheckBox
-            android:id="@+id/chbMoreOptions"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:layout_marginLeft="16dp"
-            android:layout_marginRight="16dp"
-            android:layout_marginTop="8dp"
-            android:text="@string/more_options" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:visibility="gone" >
-
-            <TextView
-                android:id="@+id/textView2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="0dp"
-                android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp"
-                android:layout_marginTop="0dp"
-                android:text="@string/post_to_group" />
-
-            <Spinner
-                android:id="@+id/spinPostToGroup"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="0dp"
-                android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp"
-                android:layout_marginTop="8dp" />
 
         </LinearLayout>
 
