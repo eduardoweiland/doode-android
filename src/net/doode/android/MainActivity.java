@@ -19,25 +19,33 @@
 
 package net.doode.android;
 
+import java.util.Vector;
+
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.ActionBar;
-import com.actionbarsherlock.app.ActionBar.Tab;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
+import com.slidingmenu.lib.SlidingMenu;
 
 public class MainActivity extends SherlockFragmentActivity {
 
+    public static final String TAG = "MainActivity";
+
     private ActionBar mActionBar;
-    private ViewPager mPager;
+    private ViewPager mViewPager;
+    private TabsAdapter mTabsAdapter;
+    private SlidingMenu mSidebar;
+
+    public static final int LOGIN_REQUEST = 1;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -47,69 +55,42 @@ public class MainActivity extends SherlockFragmentActivity {
             Toast.makeText(this, R.string.offline, Toast.LENGTH_LONG).show();
         }
 
-        // Vector<String> loginInfo = Doode.doodeDB.loadLoginInfo();
-        // if ( loginInfo == null ) {
-        // startActivity( new Intent().setClass( getApplicationContext(),
-        // LoginActivity.class ) );
-        // return;
-        // }
-
-        // Doode.client.login(loginInfo.get(0), Doode.deviceId,
-        // loginInfo.get(1));
+        Vector<String> loginInfo = Doode.doodeDB.loadLoginInfo();
+        if (loginInfo == null) {
+            startActivityForResult(new Intent(this, LoginActivity.class), LOGIN_REQUEST);
+            return;
+        }
 
         setContentView(R.layout.main);
+        prepareActionBar();
+        prepareSidebar();
 
-        // Get a reference for the action bar
-        mActionBar = getSupportActionBar();
-        mActionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
-        mActionBar.setDisplayHomeAsUpEnabled(true);
-        mActionBar.setDisplayShowTitleEnabled(false);
+        Log.i(TAG, "LOGIN: user=" + loginInfo.get(0) + ",device=" + Doode.deviceId + ",apikey=" + loginInfo.get(1));
+        Doode.client.login(loginInfo.get(0), Doode.deviceId, loginInfo.get(1));
 
         // Get a reference for the ViewPager from layout
-        mPager = (ViewPager) findViewById(R.id.pager);
-        mPager.setAdapter(new MainFragmentPagerAdapter(getSupportFragmentManager()));
-
-        // Page selected listener
-        mPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
-
-            @Override
-            public void onPageSelected(int position) {
-                super.onPageSelected(position);
-                mActionBar.setSelectedNavigationItem(position);
-            }
-        });
-
-        // Tab listener
-        ActionBar.TabListener tabListener = new ActionBar.TabListener() {
-
-            public void onTabSelected(Tab tab, FragmentTransaction ft) {
-                mPager.setCurrentItem(tab.getPosition());
-            }
-
-            public void onTabUnselected(Tab tab, FragmentTransaction ft) {}
-
-            public void onTabReselected(Tab tab, FragmentTransaction ft) {}
-        };
+        mViewPager = (ViewPager) findViewById(R.id.pager);
+        mTabsAdapter = new TabsAdapter(this, mViewPager);
 
         // Activity
-        mActionBar.addTab(mActionBar.newTab()
-                .setText(R.string.activity_title)
-                .setTabListener(tabListener));
+        mTabsAdapter.addTab(mActionBar.newTab()
+                .setText(R.string.activity),
+                ActivityFragment.class, null);
 
         // Mentions
-        mActionBar.addTab(mActionBar.newTab()
-                .setText(R.string.mentions_title)
-                .setTabListener(tabListener));
+        mTabsAdapter.addTab(mActionBar.newTab()
+                .setText(R.string.mentions),
+                MentionsFragment.class, null);
 
         // Messages
-        mActionBar.addTab(mActionBar.newTab()
-                .setText(R.string.messages_title)
-                .setTabListener(tabListener));
+        mTabsAdapter.addTab(mActionBar.newTab()
+                .setText(R.string.messages),
+                MessagesFragment.class, null);
 
         // Notifications
-        mActionBar.addTab(mActionBar.newTab()
-                .setText(R.string.notifications_title)
-                .setTabListener(tabListener));
+        mTabsAdapter.addTab(mActionBar.newTab()
+                .setText(R.string.notifications),
+                NotificationsFragment.class, null);
     }
 
     @Override
@@ -137,51 +118,48 @@ public class MainActivity extends SherlockFragmentActivity {
 
             case R.id.menu_about:
                 return true;
+
+            case android.R.id.home:
+                // Toggle the sidebar
+                mSidebar.toggle();
+                break;
         }
         return super.onOptionsItemSelected(item);
     }
 
-    private class MainFragmentPagerAdapter extends FragmentPagerAdapter {
-
-        public MainFragmentPagerAdapter(FragmentManager fm) {
-            super(fm);
-        }
-
-        final int PAGE_COUNT = 4;
-
-        /** This method will be invoked when a page is requested to create */
-        @Override
-        public Fragment getItem(int index) {
-            Bundle data = new Bundle();
-            data.putInt("current_page", index + 1);
-
-            switch (index) {
-                case 0:
-                    ActivityFragment activityFrag = new ActivityFragment();
-                    activityFrag.setArguments(data);
-                    return activityFrag;
-                case 1:
-                    MentionsFragment mentionsFrag = new MentionsFragment();
-                    mentionsFrag.setArguments(data);
-                    return mentionsFrag;
-                case 2:
-                    MessagesFragment messagesFrag = new MessagesFragment();
-                    messagesFrag.setArguments(data);
-                    return messagesFrag;
-                case 3:
-                    MentionsFragment another = new MentionsFragment();
-                    another.setArguments(data);
-                    return another;
-            }
-
-            return null;
-        }
-
-        /** Returns the number of pages */
-        @Override
-        public int getCount() {
-            return PAGE_COUNT;
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == LOGIN_REQUEST) {
+            // TODO
         }
     }
 
+    /**
+     * Get the action bar reference and set options.
+     */
+    private void prepareActionBar() {
+        mActionBar = getSupportActionBar();
+        mActionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+        mActionBar.setIcon(R.drawable.doode_logo);
+        mActionBar.setDisplayHomeAsUpEnabled(true);
+        mActionBar.setDisplayShowTitleEnabled(false);
+    }
+
+    /**
+     * Create the sidebar on the left.
+     */
+    private void prepareSidebar() {
+        mSidebar = new SlidingMenu(this, SlidingMenu.SLIDING_CONTENT);
+        mSidebar.setBehindWidth(280); // temp
+        mSidebar.setTouchModeAbove(SlidingMenu.TOUCHMODE_MARGIN);
+        mSidebar.setFadeDegree(0.3f);
+        mSidebar.setShadowDrawable(R.drawable.sidebar_shadow);
+        mSidebar.setShadowWidth(30); // temp
+
+        View sidebar = LayoutInflater.from(this).inflate(R.layout.sidebar, null);
+        final ListView listView = (ListView) sidebar.findViewById(android.R.id.list);
+        listView.setFooterDividersEnabled(true);
+        listView.setAdapter(new SidebarAdapter());
+        mSidebar.setMenu(sidebar);
+    }
 }
