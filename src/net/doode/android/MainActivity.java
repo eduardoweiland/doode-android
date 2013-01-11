@@ -35,6 +35,7 @@ import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 import com.slidingmenu.lib.SlidingMenu;
+import com.viewpagerindicator.TabPageIndicator;
 
 public class MainActivity extends SherlockFragmentActivity {
 
@@ -68,29 +69,20 @@ public class MainActivity extends SherlockFragmentActivity {
         Log.i(TAG, "LOGIN: user=" + loginInfo.get(0) + ",device=" + Doode.deviceId + ",apikey=" + loginInfo.get(1));
         Doode.client.login(loginInfo.get(0), Doode.deviceId, loginInfo.get(1));
 
+        mTabsAdapter = new TabsAdapter(this);
+
+        // Add pages to adapter
+        mTabsAdapter.addTab(getString(R.string.activity), ActivityFragment.class, null);
+        mTabsAdapter.addTab(getString(R.string.mentions), MentionsFragment.class, null);
+        mTabsAdapter.addTab(getString(R.string.messages), MessagesFragment.class, null);
+        mTabsAdapter.addTab(getString(R.string.notifications), NotificationsFragment.class, null);
+
         // Get a reference for the ViewPager from layout
         mViewPager = (ViewPager) findViewById(R.id.pager);
-        mTabsAdapter = new TabsAdapter(this, mViewPager);
+        mViewPager.setAdapter(mTabsAdapter);
 
-        // Activity
-        mTabsAdapter.addTab(mActionBar.newTab()
-                .setText(R.string.activity),
-                ActivityFragment.class, null);
-
-        // Mentions
-        mTabsAdapter.addTab(mActionBar.newTab()
-                .setText(R.string.mentions),
-                MentionsFragment.class, null);
-
-        // Messages
-        mTabsAdapter.addTab(mActionBar.newTab()
-                .setText(R.string.messages),
-                MessagesFragment.class, null);
-
-        // Notifications
-        mTabsAdapter.addTab(mActionBar.newTab()
-                .setText(R.string.notifications),
-                NotificationsFragment.class, null);
+        TabPageIndicator indicator = (TabPageIndicator) findViewById(R.id.indicator);
+        indicator.setViewPager(mViewPager);
     }
 
     @Override
@@ -139,7 +131,7 @@ public class MainActivity extends SherlockFragmentActivity {
      */
     private void prepareActionBar() {
         mActionBar = getSupportActionBar();
-        mActionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+        //mActionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
         mActionBar.setIcon(R.drawable.doode_logo);
         mActionBar.setDisplayHomeAsUpEnabled(true);
         mActionBar.setDisplayShowTitleEnabled(false);

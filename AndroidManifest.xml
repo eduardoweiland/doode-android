@@ -26,7 +26,7 @@
                  android:allowClearUserData="true"
                  android:description="@string/app_description"
                  android:name="Doode"
-                 android:theme="@style/Theme.Sherlock.Light">
+                 android:theme="@style/DoodeTheme">
 
         <!-- launcher activity -->
         <activity android:label="@string/app_name"
