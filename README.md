@@ -1,12 +1,6 @@
-Doode Android
-=============
+# Doode Android
 
-Official Doode app for Android.
+## NO LONGER DEVELOPED!
 
-Freedom above all
-=================
-
-[Doode](http://www.doode.net) is a Brazilian social network for Linux users and
-enthusiasts. Currently we have more than 4,000 registered users and counting. We
-love free software, so much that our motto is "Freedom above all", so we decided
-to create an open source Android application.
+Doode is upgrading to a new platform and making changes to the API, so this
+application will be rewritten as soon as this migration is done.
